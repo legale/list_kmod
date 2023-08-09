@@ -4,22 +4,18 @@ MODULE_NAME = list_kmod
 # skip module verification
 #CONFIG_MODULE_SIG=n
 
-# Путь к исходным файлам вашего модуля
 SRC_DIR = ./src
 
-# Компилятор ядра Linux (указывается полный путь к компилятору)
+
 KERNEL_CC = /usr/bin/gcc
 
 BUILD = /lib/modules/$(shell uname -r)/build
 KSRC = /usr/src/linux-headers-$(shell uname -r)
 
-# Опции компиляции
 EXTRA_CFLAGS += -I$(SRC_DIR)
 
-# Опции компилятора для модуля ядра
 KERNEL_MODFLAGS = -DMODULE -D__KERNEL__
 
-# Все исходные файлы вашего модуля
 SRCS = $(SRC_DIR)/$(MODULE_NAME).c
 
 obj-m += $(MODULE_NAME).o
@@ -34,10 +30,10 @@ genkey:
 importkey:
 	sudo keyctl padd asymmetric "my desc" @u <MOK.der
 
-sign:
+sign: all genkey
 	$(KSRC)/scripts/sign-file sha256 ./MOK.priv ./MOK.der $(MODULE_NAME).ko
 
-insmod:
+insmod: all
 	-sudo rmmod $(MODULE_NAME)
 	sudo insmod ./$(MODULE_NAME).ko
 
